@@ -81,7 +81,7 @@ export default function LiveResult({ loading, result, inputText }) {
       <div className="glass result-card">
         {/* Header */}
         <div className="result-header">
-          <h3>{toxic ? "⚠️ Toxic Content" : "✅ Safe Content"}</h3>
+          <h3>{toxic ? "⚠️ Negative Content" : "✅ Positive Content"}</h3>
           <SeverityBadge severity={severity} />
         </div>
 
