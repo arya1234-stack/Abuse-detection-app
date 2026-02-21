@@ -36,47 +36,7 @@
 * ✅ Abuse table with CSV export
 * ✅ Word cloud visualization
 * ✅ Analysis history tracking
-* ✅ Premium glassmorphism UI
 
-
-## 📁 Project Structure
-
-```
-ToxiGuard-AI/
-│
-├── backend/
-│   ├── app.py
-│   ├── train_model.py
-│   ├── requirements.txt
-│   ├── abuse_model.joblib
-│   ├── label_encoder.joblib
-│   └── utils/
-│       ├── abuse_words.py
-│       ├── preprocessing.py
-│       ├── sentiment.py
-│       └── llm_guard.py
-│
-├── frontend/
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── index.html
-│   └── src/
-│       ├── main.jsx
-│       ├── App.jsx
-│       ├── api.js
-│       ├── styles.css
-│       └── components/
-│           ├── Header.jsx
-│           ├── TextInput.jsx
-│           ├── LiveResult.jsx
-│           ├── KPI.jsx
-│           ├── Charts.jsx
-│           ├── AbuseTable.jsx
-│           ├── History.jsx
-│           └── WordClouds.jsx
-│
-└── README.md
-```
 
 
 ## 🧩 Backend Setup (Local)
@@ -181,99 +141,6 @@ Open browser:
 
 ```
 http://localhost:5173
-```
-
-
-## 🔗 API Usage
-
-### Endpoint
-
-```
-POST /predict
-```
-
-
-
-### Request
-
-```json
-{
-  "text": "you are stupid"
-}
-```
-
-
-### Response
-
-```json
-{
-  "toxic": true,
-  "confidence": 0.95,
-  "severity": "high",
-  "reason": "Matched abusive keywords",
-  "abusive_words": ["stupid"],
-  "sentiment": {
-    "label": "negative",
-    "polarity": -0.6,
-    "confidence": 0.6
-  },
-  "source": "rules"
-}
-```
-
-
-## ⚠️ Common Issues & Fixes
-
-### ❌ Backend not opening
-
-```bash
-uvicorn app:app --host 0.0.0.0 --port 8090 --reload
-```
-
-Verify:
-
-```
-http://127.0.0.1:8090/docs
-```
-
-
-### ❌ Node dependency conflicts
-
-```bash
-npm cache clean --force
-npm install
-npm run dev
-```
-
-Recommended Node version:
-
-```
-Node 18 LTS
-```
-
-
-### ❌ ML model not loading
-
-```bash
-python train_model.py
-```
-
-
-### ❌ CORS or API not responding
-
-Ensure backend is running before frontend and correct backend URL is configured.
-
-
-## 📦 Production Build
-
-```bash
-npm run build
-```
-
-Output folder:
-
-```
-frontend/dist
 ```
 
 
