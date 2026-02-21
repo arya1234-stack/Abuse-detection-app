@@ -12,7 +12,7 @@
 👉 [https://toxiguard-ai-backend.onrender.com](https://toxiguard-ai-backend.onrender.com)
 
 **GitHub Repository**
-👉 [https://github.com/wraith-klu/ToxiGuard-AI](https://github.com/wraith-klu/ToxiGuard-AI)
+👉 [https://github.com/arya1234-stack/Abuse-detection-app.git](https://github.com/arya1234-stack/Abuse-detection-app.git)
 
 
 ## 🧠 Tech Stack
