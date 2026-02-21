@@ -279,11 +279,11 @@ frontend/dist
 
 ## 👨‍💻 Author
 
-**Saurabh Yadav**
+**Arya**
 
 
 ## 📜 License
 
-MIT License
+KLU License
 
 ---
