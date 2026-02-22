@@ -6,7 +6,7 @@
 ## Online Deployment Links
 
 **Frontend (Vercel)**
-👉 [https://toxiguard-ai.vercel.app](https://toxiguard-ai.vercel.app)
+👉 [https://abuse-detection-app.vercel.app/](https://abuse-detection-app.vercel.app/)
 
 **Backend API (Render)**
 👉 [https://abuse-detection-app.onrender.com](https://abuse-detection-app.onrender.com)
