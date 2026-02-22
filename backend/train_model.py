@@ -10,22 +10,32 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 from utils.preprocessing import normalize_text
 
-df = pd.read_csv("data/sample_data.csv")
+# ---------------- Load dataset ----------------
+df = pd.read_csv("data/train.csv")
 
-print("\nClass distribution:")
-print(df["label"].value_counts())
+print("\nAvailable Columns:", df.columns.tolist())
+
+# ---------------- Select columns (for your dataset) ----------------
+text_col = "comment_text"
+label_col = "toxic"
+
+print(f"\nUsing '{text_col}' as text column")
+print(f"Using '{label_col}' as label column")
 
 # ---------------- Clean text ----------------
-df["text"] = df["text"].astype(str).apply(normalize_text)
+df[text_col] = df[text_col].astype(str).apply(normalize_text)
+
+print("\nClass distribution:")
+print(df[label_col].value_counts())
 
 # ---------------- Encode labels ----------------
 encoder = LabelEncoder()
-df["label_encoded"] = encoder.fit_transform(df["label"])
+df["label_encoded"] = encoder.fit_transform(df[label_col])
 
-# Save encoder for inference
+# Save encoder
 joblib.dump(encoder, "label_encoder.joblib")
 
-X = df["text"]
+X = df[text_col]
 y = df["label_encoded"]
 
 # ---------------- Train-test split ----------------
@@ -40,19 +50,18 @@ X_train, X_test, y_train, y_test = train_test_split(
 # ---------------- Pipeline ----------------
 pipeline = Pipeline([
     ("tfidf", TfidfVectorizer(
-        ngram_range=(1,2),
+        ngram_range=(1, 2),
         max_features=15000,
         min_df=2
     )),
     ("clf", LogisticRegression(
         max_iter=3000,
-        class_weight="balanced",
-        multi_class="auto",
-        n_jobs=-1
+        class_weight="balanced"
     ))
 ])
 
 # ---------------- Train ----------------
+print("\nTraining model...")
 pipeline.fit(X_train, y_train)
 
 # ---------------- Evaluate ----------------
@@ -62,7 +71,7 @@ print("\nClassification Report:")
 print(classification_report(
     y_test,
     y_pred,
-    target_names=encoder.classes_
+    target_names=["Not Toxic", "Toxic"]
 ))
 
 print("\nConfusion Matrix:")
@@ -73,5 +82,6 @@ print(f"\nModel accuracy: {accuracy * 100:.2f}%")
 
 # ---------------- Save model ----------------
 joblib.dump(pipeline, "abuse_model.joblib")
-print("\nModel saved as 'abuse_model.joblib'")
-print("Label encoder saved as 'label_encoder.joblib'")
+
+print("\n✅ Model saved as 'abuse_model.joblib'")
+print("✅ Label encoder saved as 'label_encoder.joblib'")

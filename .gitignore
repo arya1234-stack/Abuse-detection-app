@@ -63,3 +63,10 @@ desktop.ini
 *.tmp
 *.bak
 *.old
+
+
+backend/data/
+*.csv
+*.joblib
+venv/
+__pycache__/

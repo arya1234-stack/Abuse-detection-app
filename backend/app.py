@@ -1,5 +1,6 @@
 import os
 import joblib
+import numpy as np
 from collections import Counter
 
 from fastapi import FastAPI
@@ -18,8 +19,8 @@ from utils.llm_guard import analyze_toxicity_llm
 
 app = FastAPI(
     title="ToxiGuard AI",
-    description="Hybrid AI Toxic Content Detection API (Rules + ML + LLM)",
-    version="3.0.0"
+    description="Hybrid AI Toxic Content Detection API",
+    version="4.0.0"
 )
 
 # =====================================================
@@ -39,7 +40,6 @@ app.add_middleware(
 # =====================================================
 
 BASE_DIR = os.path.dirname(__file__)
-
 MODEL_PATH = os.path.join(BASE_DIR, "abuse_model.joblib")
 ENCODER_PATH = os.path.join(BASE_DIR, "label_encoder.joblib")
 
@@ -60,7 +60,6 @@ except Exception as e:
 class TextRequest(BaseModel):
     text: str
 
-
 # =====================================================
 # HEALTH CHECK
 # =====================================================
@@ -69,54 +68,22 @@ class TextRequest(BaseModel):
 def health():
     return {"status": "ToxiGuard API running"}
 
-
 # =====================================================
-# SMART SUGGESTION ENGINE
+# SAFE NUMPY CONVERTER
 # =====================================================
 
-def generate_suggestions(detected_phrases: list[str]) -> dict:
-    """
-    Generates safe replacement suggestions for toxic phrases.
-    """
-    suggestions = {}
-
-    for phrase in detected_phrases:
-        p = phrase.lower()
-
-        # Sexual content
-        if any(word in p for word in [
-            "boob", "breast", "sex", "nude", "squeeze",
-            "hot", "sexy", "kiss", "bed"
-        ]):
-            suggestions[phrase] = (
-                "You can express appreciation respectfully without referring to body parts."
-            )
-
-        # Harassment / abuse
-        elif any(word in p for word in [
-            "idiot", "stupid", "hate", "kill",
-            "fool", "shut up", "loser"
-        ]):
-            suggestions[phrase] = (
-                "Please express your opinion politely and respectfully."
-            )
-
-        # Threats / violence
-        elif any(word in p for word in [
-            "hit", "beat", "murder", "attack", "destroy"
-        ]):
-            suggestions[phrase] = (
-                "Avoid violent language and communicate calmly."
-            )
-
-        # Default fallback
-        else:
-            suggestions[phrase] = (
-                "Consider using respectful and neutral language."
-            )
-
-    return suggestions
-
+def convert_numpy(obj):
+    if isinstance(obj, dict):
+        return {k: convert_numpy(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy(i) for i in obj]
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.integer,)):
+        return int(obj)
+    elif isinstance(obj, (np.floating,)):
+        return float(obj)
+    return obj
 
 # =====================================================
 # RESPONSE BUILDER
@@ -124,13 +91,8 @@ def generate_suggestions(detected_phrases: list[str]) -> dict:
 
 def build_response(payload: dict):
     abusive_words = payload.get("abusive_words", [])
-    freq = dict(Counter(abusive_words))
-
-    payload["word_frequency"] = freq
-    payload["suggestions"] = generate_suggestions(abusive_words)
-
-    return payload
-
+    payload["word_frequency"] = dict(Counter(abusive_words))
+    return convert_numpy(payload)
 
 # =====================================================
 # MAIN ENDPOINT
@@ -138,6 +100,7 @@ def build_response(payload: dict):
 
 @app.post("/predict")
 def predict(req: TextRequest):
+
     text = req.text.strip()
 
     if not text:
@@ -154,48 +117,48 @@ def predict(req: TextRequest):
             "llm": None
         })
 
-    # -------------------------------------------------
-    # PREPROCESS
-    # -------------------------------------------------
+    # ---------------- PREPROCESS ----------------
     processed = preprocess(text)
     clean_text = processed["clean_text"]
 
     sentiment = analyze_sentiment(clean_text)
 
-    # -------------------------------------------------
-    # 🧱 RULE ENGINE
-    # -------------------------------------------------
+    # ---------------- RULE ENGINE ----------------
     abusive_hits = detect_abusive_tokens(clean_text)
+
+    rules_confidence = 0.95 if abusive_hits else 0.0
 
     rules_result = {
         "triggered": len(abusive_hits) > 0,
         "abusive_words": abusive_hits,
-        "confidence": 0.95 if abusive_hits else 0.0
+        "confidence": rules_confidence
     }
 
-    # -------------------------------------------------
-    # 🤖 ML ENGINE
-    # -------------------------------------------------
-    ml_result = None
+    # ---------------- ML ENGINE ----------------
     toxic_probability = 0.0
+    ml_result = None
 
     if model and label_encoder:
         try:
             probs = model.predict_proba([clean_text])[0]
             labels = list(label_encoder.classes_)
 
-            if "toxic" in labels:
-                toxic_probability = float(probs[labels.index("toxic")])
+            # Assume binary 0=not toxic, 1=toxic
+            if 1 in labels:
+                toxic_index = labels.index(1)
             else:
-                toxic_probability = float(max(probs))
+                toxic_index = np.argmax(probs)
 
-            pred_label = label_encoder.inverse_transform([probs.argmax()])[0]
+            toxic_probability = float(probs[toxic_index])
+
+            pred_index = int(np.argmax(probs))
+            pred_label = labels[pred_index]
 
             ml_result = {
-                "label": pred_label,
+                "label": str(pred_label),
                 "toxicity_probability": round(toxic_probability, 3),
                 "all_probabilities": {
-                    labels[i]: round(float(probs[i]), 3)
+                    str(labels[i]): round(float(probs[i]), 3)
                     for i in range(len(labels))
                 }
             }
@@ -203,33 +166,34 @@ def predict(req: TextRequest):
         except Exception as e:
             print("⚠️ ML prediction error:", e)
 
-    # -------------------------------------------------
-    # 🧠 LLM ENGINE
-    # -------------------------------------------------
+    # ---------------- LLM ENGINE ----------------
     llm_result = analyze_toxicity_llm(text)
 
-    # -------------------------------------------------
-    # 🎯 FINAL DECISION (ENSEMBLE)
-    # -------------------------------------------------
+    llm_toxic = llm_result.get("toxic", False)
 
-    scores = [
-        rules_result["confidence"],
-        toxic_probability,
-        llm_result.get("confidence", 0.0)
-    ]
+    # ---------------- FINAL DECISION ----------------
+    toxic = (
+        toxic_probability >= 0.6
+        or rules_confidence > 0
+        or llm_toxic is True
+    )
 
-    final_confidence = round(max(scores), 3)
-    toxic = final_confidence >= 0.5
+    # Confidence now reflects toxic confidence ONLY
+    confidence = round(
+        max(toxic_probability, rules_confidence),
+        3
+    )
 
-    # Severity logic
-    if final_confidence > 0.85:
-        severity = "high"
-    elif final_confidence > 0.6:
-        severity = "medium"
+    if toxic:
+        if confidence > 0.85:
+            severity = "high"
+        elif confidence > 0.6:
+            severity = "medium"
+        else:
+            severity = "low"
     else:
         severity = "low"
 
-    # Combine abusive words from rules + llm
     abusive_words = list(set(
         abusive_hits +
         llm_result.get("detected_phrases", [])
@@ -237,13 +201,13 @@ def predict(req: TextRequest):
 
     reason = (
         f"Rules: {rules_result['triggered']} | "
-        f"ML prob: {round(toxic_probability,2)} | "
-        f"LLM: {llm_result.get('explanation','')}"
+        f"ML toxic prob: {round(toxic_probability,2)} | "
+        f"LLM toxic: {llm_toxic}"
     )
 
     payload = {
         "toxic": toxic,
-        "confidence": final_confidence,
+        "confidence": confidence,
         "severity": severity,
         "reason": reason,
         "abusive_words": abusive_words,
