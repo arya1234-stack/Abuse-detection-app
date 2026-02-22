@@ -145,7 +145,7 @@ http://localhost:5173
 
 ## 👨‍💻 Author
 
-**Arya**
+**Arya - 2300033603**
 
 
 ## 📜 License
