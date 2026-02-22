@@ -30,7 +30,6 @@
 * ✅ ML-based classification (97%+ accuracy)
 * ✅ LLM fallback for ambiguous content
 * ✅ Highlight abusive words
-* ✅ KPI dashboard (word count, abusive count, toxicity)
 * ✅ Toxicity confidence bar
 * ✅ Pie chart distribution
 * ✅ Abuse table with CSV export
