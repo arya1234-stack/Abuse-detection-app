@@ -9,7 +9,7 @@
 👉 [https://toxiguard-ai.vercel.app](https://toxiguard-ai.vercel.app)
 
 **Backend API (Render)**
-👉 [https://toxiguard-ai-backend.onrender.com](https://toxiguard-ai-backend.onrender.com)
+👉 [https://abuse-detection-app.onrender.com](https://abuse-detection-app.onrender.com)
 
 **GitHub Repository**
 👉 [https://github.com/arya1234-stack/Abuse-detection-app.git](https://github.com/arya1234-stack/Abuse-detection-app.git)
