@@ -3,7 +3,7 @@
 **Social Media Abuse & Toxicity Detection** is a **real-time toxic content detection platform** that combines **Machine Learning + LLM intelligence + modern analytics UI** to detect abusive language, estimate toxicity, explain predictions, and visualize insights in real time.
 
 
-## 🌐 Live Demo
+## Online Deployment Links
 
 **Frontend (Vercel)**
 👉 [https://toxiguard-ai.vercel.app](https://toxiguard-ai.vercel.app)
