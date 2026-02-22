@@ -1,4 +1,4 @@
-# 🛡️ ToxiGuard AI
+# Social Media Abuse & Toxicity Detection with AI
 
 **ToxiGuard AI** is a **real-time toxic content detection platform** that combines **Machine Learning + LLM intelligence + modern analytics UI** to detect abusive language, estimate toxicity, explain predictions, and visualize insights in real time.
 
