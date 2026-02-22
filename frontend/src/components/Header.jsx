@@ -6,12 +6,12 @@ export default function Header() {
       <h1
         style={{
           fontSize: "3rem",
-          color: "#38bdf8",
+          color: "#f83838ff",
           margin: 0,
           letterSpacing: "0.5px",
         }}
       >
-        🛡️ ToxiGuard AI
+        Social Media Abuse & Toxicity Detection with AI
       </h1>
 
       <p

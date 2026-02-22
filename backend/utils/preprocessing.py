@@ -1,10 +1,6 @@
 import re
 import string
 
-# =====================================================
-# COMMON NORMALIZATION MAP
-# =====================================================
-
 OBFUSCATION_MAP = {
     "@": "a",
     "$": "s",
@@ -21,9 +17,6 @@ OBFUSCATION_MAP = {
 }
 
 
-# =====================================================
-# CLEANING PIPELINE
-# =====================================================
 
 def normalize_text(text: str) -> str:
     """
@@ -71,9 +64,6 @@ def tokenize(text: str) -> list[str]:
     return text.split(" ")
 
 
-# =====================================================
-# FULL PIPELINE
-# =====================================================
 
 def preprocess(text: str) -> dict:
     """
